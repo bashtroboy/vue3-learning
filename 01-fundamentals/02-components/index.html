@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue 3 - Components Introduction</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            font-size: 1.3em;
+        }
+        
+        /* Form Styles */
+        .object-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        /* Info Card Styles */
+        .info-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+        }
+        
+        .info-card h3 {
+            margin-top: 0;
+            color: #495057;
+            font-size: 1.1em;
+        }
+        
+        .info-row {
+            display: flex;
+            margin: 12px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 120px;
+        }
+        
+        .info-value {
+            color: #212529;
+        }
+        
+        /* Status Badge Styles */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* Computed Info Styles */
+        .computed-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .computed-info h3 {
+            margin-top: 0;
+            color: #0d47a1;
+        }
+        
+        .computed-info p {
+            margin: 8px 0;
+            color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>📦 Components Demo</h1>
+            <p>Same app as Lesson 1, but broken into reusable components!</p>
+            
+            <!-- Object Form Component -->
+            <h2>Edit Object</h2>
+            <object-form
+                :object-data="objectData"
+                @update:name="objectData.name = $event"
+                @update:id="objectData.id = $event"
+                @update:type="objectData.type = $event"
+                @update:active="objectData.isActive = $event"
+                @reset="resetObject"
+            ></object-form>
+            
+            <!-- Info Card Component -->
+            <h2>Object Information</h2>
+            <info-card :object-data="objectData"></info-card>
+            
+            <!-- Computed Info Component -->
+            <computed-info :object-data="objectData"></computed-info>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed } = Vue;
+
+        // ============================================
+        // STATUS BADGE COMPONENT
+        // ============================================
+        const StatusBadge = {
+            props: {
+                isActive: {
+                    type: Boolean,
+                    required: true
+                }
+            },
+            template: `
+                <span :class="['status-badge', isActive ? 'active' : 'inactive']">
+                    {{ isActive ? 'Active' : 'Inactive' }}
+                </span>
+            `
+        };
+
+        // ============================================
+        // OBJECT FORM COMPONENT
+        // ============================================
+        const ObjectForm = {
+            props: {
+                objectData: {
+                    type: Object,
+                    required: true
+                }
+            },
+            emits: ['update:name', 'update:id', 'update:type', 'update:active', 'reset'],
+            template: `
+                <div class="object-form">
+                    <div class="form-group">
+                        <label for="objectName">Object Name:</label>
+                        <input 
+                            id="objectName"
+                            :value="objectData.name"
+                            @input="$emit('update:name', $event.target.value)"
+                            type="text" 
+                            placeholder="Enter object name..."
+                        />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="objectId">Object ID:</label>
+                        <input 
+                            id="objectId"
+                            :value="objectData.id"
+                            @input="$emit('update:id', Number($event.target.value))"
+                            type="number" 
+                            placeholder="Enter object ID..."
+                        />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="objectType">Object Type:</label>
+                        <select 
+                            id="objectType"
+                            :value="objectData.type"
+                            @change="$emit('update:type', $event.target.value)"
+                        >
+                            <option value="Folder">Folder</option>
+                            <option value="Document">Document</option>
+                            <option value="Category">Category</option>
+                            <option value="Workflow">Workflow</option>
+                            <option value="Custom">Custom</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input 
+                                type="checkbox" 
+                                :checked="objectData.isActive"
+                                @change="$emit('update:active', $event.target.checked)"
+                            />
+                            Object is Active
+                        </label>
+                    </div>
+                    
+                    <button @click="$emit('reset')">Reset to Defaults</button>
+                </div>
+            `
+        };
+
+        // ============================================
+        // INFO CARD COMPONENT
+        // ============================================
+        const InfoCard = {
+            props: {
+                objectData: {
+                    type: Object,
+                    required: true
+                }
+            },
+            components: {
+                StatusBadge
+            },
+            template: `
+                <div class="info-card">
+                    <h3>Current Object Information</h3>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Name:</span>
+                        <span class="info-value">{{ objectData.name || '(not set)' }}</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">ID:</span>
+                        <span class="info-value">{{ objectData.id }}</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Type:</span>
+                        <span class="info-value">{{ objectData.type }}</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Status:</span>
+                        <status-badge :is-active="objectData.isActive"></status-badge>
+                    </div>
+                </div>
+            `
+        };
+
+        // ============================================
+        // COMPUTED INFO COMPONENT
+        // ============================================
+        const ComputedInfo = {
+            props: {
+                objectData: {
+                    type: Object,
+                    required: true
+                }
+            },
+            setup(props) {
+                // Computed properties work the same in components!
+                const fullDescription = computed(() => {
+                    return `${props.objectData.type} "${props.objectData.name}" (ID: ${props.objectData.id})`;
+                });
+
+                const objectPath = computed(() => {
+                    return `/Content Server/Enterprise/${props.objectData.type}s/${props.objectData.name}`;
+                });
+
+                const canEdit = computed(() => {
+                    return props.objectData.isActive && props.objectData.id > 0;
+                });
+
+                return {
+                    fullDescription,
+                    objectPath,
+                    canEdit
+                };
+            },
+            template: `
+                <div class="computed-info">
+                    <h3>📊 Computed Information</h3>
+                    <p><strong>Full Description:</strong> {{ fullDescription }}</p>
+                    <p><strong>Object Path:</strong> {{ objectPath }}</p>
+                    <p><strong>Can Edit:</strong> {{ canEdit ? 'Yes' : 'No' }}</p>
+                </div>
+            `
+        };
+
+        // ============================================
+        // MAIN APP
+        // ============================================
+        createApp({
+            components: {
+                ObjectForm,
+                InfoCard,
+                ComputedInfo
+            },
+            setup() {
+                // Now we just manage the data in one place
+                const objectData = ref({
+                    name: 'Enterprise Workspace',
+                    id: 2000,
+                    type: 'Folder',
+                    isActive: true
+                });
+
+                const resetObject = () => {
+                    objectData.value = {
+                        name: 'Enterprise Workspace',
+                        id: 2000,
+                        type: 'Folder',
+                        isActive: true
+                    };
+                };
+
+                return {
+                    objectData,
+                    resetObject
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
